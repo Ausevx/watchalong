@@ -1,0 +1,237 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Nav ─────────────────────────────── */
+.nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 48px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.88rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+.logoDot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── Floating 3D Shapes ── */
+.blob {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Magenta 3D Sphere */
+.blob1 {
+  width: 160px; height: 160px;
+  background: radial-gradient(circle at 30% 30%, #ff4db8, #e6007e 60%, #8a004b 100%);
+  border-radius: 50%;
+  top: 12%; right: 10%;
+  box-shadow: 
+    inset -15px -15px 30px rgba(0,0,0,0.4),
+    inset 10px 10px 20px rgba(255,255,255,0.3),
+    20px 30px 40px rgba(0,0,0,0.6);
+  animation: float1 12s ease-in-out infinite;
+}
+
+/* Blue 3D Sphere */
+.blob2 {
+  width: 70px; height: 70px;
+  background: radial-gradient(circle at 35% 25%, #809cff, #4338ca 50%, #1e1b4b 100%);
+  border-radius: 50%;
+  top: 42%; left: 12%;
+  box-shadow: 
+    inset -8px -8px 16px rgba(0,0,0,0.5),
+    inset 5px 5px 12px rgba(255,255,255,0.4),
+    10px 20px 20px rgba(0,0,0,0.5);
+  animation: float2 9s ease-in-out infinite reverse;
+}
+
+/* Yellow 3D Cube-ish */
+.blob3 {
+  width: 90px; height: 90px;
+  background: linear-gradient(135deg, #fef08a, #eab308 50%, #a16207 100%);
+  border-radius: 20px;
+  bottom: 25%; right: 18%;
+  box-shadow: 
+    inset -10px -10px 20px rgba(0,0,0,0.3),
+    inset 8px 8px 15px rgba(255,255,255,0.6),
+    15px 25px 30px rgba(0,0,0,0.5);
+  transform: rotate(22deg);
+  animation: float3 14s ease-in-out infinite;
+}
+
+@keyframes float1 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%       { transform: translate3d(-20px, -40px, 0) scale(1.05); }
+}
+
+@keyframes float2 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%       { transform: translate3d(30px, -20px, 0) scale(0.95); }
+}
+
+@keyframes float3 {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(22deg) scale(1); }
+  50%       { transform: translate3d(-15px, 35px, 0) rotate(35deg) scale(1.08); }
+}
+
+/* ── Hero ─────────────────────────────── */
+.hero {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 120px 48px 40px;
+  position: relative;
+  z-index: 1;
+}
+
+.heroInner {
+  max-width: 900px;
+  text-align: center;
+}
+
+.heroTag {
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  text-transform: lowercase;
+  margin-bottom: 32px;
+}
+
+.heroTitle {
+  display: flex;
+  flex-direction: column;
+  line-height: 0.9;
+  font-size: clamp(3rem, 8.5vw, 6.8rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 36px;
+}
+
+
+.heroLine1 { color: var(--text); }
+.heroLine2 { color: var(--text); }
+.heroLine3 { color: var(--text); }
+
+.heroDot { color: var(--accent); }
+
+.heroSub {
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  color: var(--muted);
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+.pink { color: var(--accent); font-weight: 600; }
+
+/* ── Entry card ──────────────────────── */
+.entry {
+  padding: 0 48px 60px;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.entryCard {
+  width: 100%;
+  max-width: 900px;
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  gap: 0;
+  overflow: hidden;
+  background: #0e0e0e;
+}
+
+.entryLeft, .entryRight {
+  padding: 32px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.entryDivider {
+  background: var(--border);
+  width: 1px;
+}
+
+.fieldLabel {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+
+.createBtn { width: 100%; }
+
+.joinForm {
+  display: flex;
+  gap: 10px;
+}
+
+.error {
+  font-size: 0.8rem;
+  color: var(--accent);
+}
+
+.formats {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  color: #333;
+  text-transform: uppercase;
+}
+
+/* ── Footer ──────────────────────────── */
+.footer {
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 48px;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: #333;
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 720px) {
+  .nav { padding: 16px 20px; }
+  .hero { padding: 100px 20px 32px; }
+  .entry { padding: 0 20px 48px; }
+  .entryCard { grid-template-columns: 1fr; grid-template-rows: auto 1px auto; }
+  .entryDivider { height: 1px; width: 100%; }
+  .footer { display: none; }
+  .blob1 { width: 80px; height: 80px; right: 4%; }
+  .blob2 { display: none; }
+  .blob3 { width: 50px; height: 50px; }
+}

@@ -1,0 +1,12 @@
+{
+  "servers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@anthropic/mcp-filesystem-server", "/Users/aditya/workspace/watchalong"]
+    },
+    "fetch": {
+      "command": "npx",
+      "args": ["-y", "@anthropic/mcp-fetch-server"]
+    }
+  }
+}

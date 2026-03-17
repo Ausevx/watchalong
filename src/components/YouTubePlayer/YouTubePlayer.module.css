@@ -1,0 +1,22 @@
+.wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.player {
+  width: 100%;
+  height: 100%;
+}
+
+/* Transparent overlay blocks viewer clicks on the player */
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  cursor: not-allowed;
+  background: transparent;
+}

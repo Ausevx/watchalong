@@ -1,0 +1,86 @@
+.wrapper {
+  background: var(--bg);
+}
+
+.dropzone {
+  display: block;
+  cursor: pointer;
+}
+
+.hidden { display: none; }
+
+.dropContent {
+  border: 1.5px dashed var(--border);
+  border-radius: 8px;
+  padding: 24px 20px;
+  text-align: center;
+  transition: border-color 0.2s;
+}
+
+.dropContent:hover { border-color: var(--accent); }
+
+.uploadIcon { font-size: 1.8rem; margin-bottom: 8px; }
+
+.label {
+  color: var(--muted);
+  font-size: 0.82rem;
+  margin: 0 0 4px;
+}
+
+.label span { color: var(--text); }
+
+.hint {
+  color: #333;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  margin: 4px 0 0;
+}
+
+
+
+.progressLabel {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 10px;
+  letter-spacing: 0.04em;
+}
+
+.bar {
+  height: 3px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 99px;
+  transition: width 0.3s ease;
+}
+
+.ready, .error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+.again {
+  margin-top: 4px;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 5px 14px;
+  font-size: 0.75rem;
+  font-family: var(--font);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.again:hover { border-color: var(--text); color: var(--text); }

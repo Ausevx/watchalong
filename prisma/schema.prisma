@@ -1,0 +1,33 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Room {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  hostId      String
+  videoSource String?
+  videoUrl    String?
+  currentTime Float    @default(0)
+  isPlaying   Boolean  @default(false)
+  videos      Video[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Video {
+  id            String   @id @default(cuid())
+  roomId        String
+  room          Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  originalName  String
+  status        String   @default("pending")
+  hlsPath       String?
+  progress      Int      @default(0)
+  createdAt     DateTime @default(now())
+}
