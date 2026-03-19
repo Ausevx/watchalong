@@ -5,7 +5,7 @@ WatchAlong is a specialized platform designed for high-performance synchronized 
 ## Core Capabilities
 
 ### Synchronized Playback
-The platform utilizes the YouTube IFrame API to provide zero-latency synchronization across all participants in a room. Playback actions including play, pause, and seek are propagated instantly via a dedicated Socket.IO signaling layer.
+The platform utilizes the YouTube IFrame API to provide zero-latency synchronization across all participants in a room. Playback actions including play, pause, and seek are propagated instantly via a dedicated Socket.IO signaling layer. Please note that the system is currently optimized exclusively for YouTube content.
 
 ### Real-time Communication
 Integrated WebRTC mesh networking enables high-definition, peer-to-peer webcam communication. This architecture ensures that video data is encrypted end-to-end and transmitted directly between browsers, minimizing server load and latency.
