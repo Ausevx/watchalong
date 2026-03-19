@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import BlobPhysicsScene from '@/components/BlobPhysicsScene/BlobPhysicsScene';
 import styles from './page.module.css';
 
 export default function HomePage() {
@@ -10,6 +11,15 @@ export default function HomePage() {
   const [name, setName] = useState('');
   const [joining, setJoining] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const roomParam = params.get('room');
+    if (roomParam) {
+      setCode(roomParam.toUpperCase());
+      setError('You are joining a room! Please enter your name below first.');
+    }
+  }, []);
 
   const handleJoin = async (e) => {
     e.preventDefault();
@@ -47,10 +57,7 @@ export default function HomePage() {
 
       {/* ── Hero ────────────────────── */}
       <section className={styles.hero}>
-        {/* Floating decorative blobs */}
-        <div className={`${styles.blob} ${styles.blob1}`} />
-        <div className={`${styles.blob} ${styles.blob2}`} />
-        <div className={`${styles.blob} ${styles.blob3}`} />
+        <BlobPhysicsScene />
 
         <div className={styles.heroInner}>
           <p className={styles.heroTag}>🎬 real-time · frame-perfect · no plugins</p>
@@ -63,7 +70,7 @@ export default function HomePage() {
 
           <p className={styles.heroSub}>
             Create a room. Share the link.<br />
-            Stream <span className={styles.pink}>YouTube</span> or your own files — synced for everyone.
+            Stream <span className={styles.pink}>YouTube</span> — synced for everyone.
           </p>
         </div>
       </section>
@@ -110,9 +117,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <p className={styles.formats}>
-          MP4 · MKV · AVI · MOV · WebM · YouTube
-        </p>
+
       </section>
 
       {/* ── Footer strip ─────────────── */}

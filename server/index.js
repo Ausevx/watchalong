@@ -1,13 +1,11 @@
 /**
- * Custom Node.js server: Next.js + Socket.IO + static HLS serving
+ * Custom Node.js server: Next.js + Socket.IO + WebRTC signaling
  * Run via: node server/index.js  (or npm run dev)
  */
 const { createServer } = require('http');
 const { parse } = require('url');
 const next = require('next');
 const { Server } = require('socket.io');
-const path = require('path');
-const fs = require('fs');
 
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev });
@@ -16,38 +14,25 @@ const handle = app.getRequestHandler();
 // In-memory room state
 const rooms = new Map();
 
-// Safe static file server for /hls-output
-function serveStatic(req, res, baseDir, prefix) {
-  const relPath = decodeURIComponent(req.url.slice(prefix.length).split('?')[0]);
-  const segments = relPath.split('/').filter(s => s && s !== '..' && s !== '.');
-  const safePath = path.join(baseDir, ...segments);
-
-  if (!fs.existsSync(safePath) || !fs.statSync(safePath).isFile()) {
-    res.writeHead(404); res.end('Not found'); return;
-  }
-
-  const ext = path.extname(safePath);
-  const mime = {
-    '.m3u8': 'application/vnd.apple.mpegurl',
-    '.ts':   'video/mp2t',
-    '.mp4':  'video/mp4',
-    '.mkv':  'video/x-matroska',
-  };
-  res.setHeader('Content-Type', mime[ext] || 'application/octet-stream');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Cache-Control', 'public, max-age=31536000');
-  fs.createReadStream(safePath).pipe(res);
-}
-
 app.prepare().then(() => {
-  const hlsOutputDir = path.join(process.cwd(), 'hls-output');
-  fs.mkdirSync(hlsOutputDir, { recursive: true });
-  fs.mkdirSync(path.join(process.cwd(), 'uploads'), { recursive: true });
-
   const httpServer = createServer((req, res) => {
-    // Serve HLS segments and manifests directly
-    if (req.url && req.url.startsWith('/hls-output/')) {
-      serveStatic(req, res, hlsOutputDir, '/hls-output');
+    // Serve internal CLI monitoring API
+    if (req.url === '/api/cli/rooms') {
+      const activeRooms = Array.from(rooms.entries()).map(([id, r]) => ({
+        roomId: id,
+        hostSocketIds: Array.from(r.hostSocketIds),
+        videoSource: r.videoSource,
+        currentTime: r.currentTime,
+        isPlaying: r.isPlaying,
+        participantCount: r.participants.size,
+        participants: Array.from(r.participants.entries()).map(([pid, p]) => ({
+          id: pid,
+          name: p.name,
+          isHost: r.hostSocketIds.has(pid),
+        })),
+      }));
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ activeRooms: activeRooms.length, rooms: activeRooms }));
       return;
     }
     const parsedUrl = parse(req.url, true);
@@ -69,9 +54,10 @@ app.prepare().then(() => {
 
       if (!rooms.has(roomId)) {
         rooms.set(roomId, {
-          hostSocketId: socket.id,
+          hostSocketIds: new Set([socket.id]),
           videoSource: null,
           videoUrl: null,
+          magnetURI: null,
           currentTime: 0,
           isPlaying: false,
           participants: new Map(),
@@ -79,12 +65,13 @@ app.prepare().then(() => {
       }
 
       const room = rooms.get(roomId);
-      room.participants.set(socket.id, { name: socket.data.name });
-      const isHost = room.hostSocketId === socket.id;
+      room.participants.set(socket.id, { name: socket.data.name, camOn: false, micOn: false });
+      const isHost = room.hostSocketIds.has(socket.id);
 
       socket.emit('sync:init', {
         videoSource: room.videoSource,
         videoUrl: room.videoUrl,
+        magnetURI: room.magnetURI,
         currentTime: room.currentTime,
         isPlaying: room.isPlaying,
         isHost,
@@ -98,7 +85,7 @@ app.prepare().then(() => {
     socket.on('sync:state', (payload) => {
       const roomId = socket.data.roomId;
       const room = rooms.get(roomId);
-      if (!room || room.hostSocketId !== socket.id) return;
+      if (!room || !room.hostSocketIds.has(socket.id)) return;
 
       const { action, currentTime } = payload;
       room.currentTime = currentTime ?? room.currentTime;
@@ -115,14 +102,14 @@ app.prepare().then(() => {
       });
     });
 
-    // ── Host sets video source ──────────────────────────────────────────────
+    // ── Host sets video source (YouTube) ─────────────────────────────────
     socket.on('video:set', (payload) => {
       const roomId = socket.data.roomId;
       const room = rooms.get(roomId);
-      if (!room || room.hostSocketId !== socket.id) return;
+      if (!room || !room.hostSocketIds.has(socket.id)) return;
 
       room.videoSource = payload.videoSource;
-      room.videoUrl = payload.videoUrl;
+      room.videoUrl = payload.videoUrl || null;
       room.currentTime = 0;
       room.isPlaying = false;
 
@@ -134,7 +121,67 @@ app.prepare().then(() => {
       });
     });
 
-    // ── Chat ────────────────────────────────────────────────────────────────
+
+    // ── Ping/Request (viewer → any host) ────────────────────────────────────
+    socket.on('sync:request', (payload) => {
+      const roomId = socket.data.roomId;
+      const room = rooms.get(roomId);
+      if (!room || room.hostSocketIds.has(socket.id)) return;
+      
+      // Notify all hosts
+      room.hostSocketIds.forEach(hostId => {
+        io.to(hostId).emit('sync:request', {
+          from: socket.data.name,
+          action: payload.action,
+        });
+      });
+    });
+
+    // WebRTC Signaling Relay
+    socket.on('webrtc:signal', ({ target, signal }) => {
+      io.to(target).emit('webrtc:signal', {
+        sender: socket.id,
+        signal
+      });
+    });
+
+    // ── WebRTC State Sync (cam/mic status) ──────────────────────────────────
+    socket.on('webrtc:state', ({ camOn, micOn }) => {
+      const roomId = socket.data.roomId;
+      const room = rooms.get(roomId);
+      if (!room) return;
+      
+      const p = room.participants.get(socket.id);
+      if (p) {
+        p.camOn = !!camOn;
+        p.micOn = !!micOn;
+        io.to(roomId).emit('participants:update', _participantList(room));
+      }
+    });
+
+    // ── Host Toggle ────────────────────────────────────────────────────────
+    socket.on('host:toggle', (payload) => {
+      const roomId = socket.data.roomId;
+      const room = rooms.get(roomId);
+      if (!room || !room.hostSocketIds.has(socket.id)) return;
+
+      const targetId = payload.targetId;
+      if (room.participants.has(targetId)) {
+        if (room.hostSocketIds.has(targetId)) {
+          // Prevent removing the last host
+          if (room.hostSocketIds.size > 1) {
+            room.hostSocketIds.delete(targetId);
+            io.to(targetId).emit('host:demoted', {});
+          }
+        } else {
+          room.hostSocketIds.add(targetId);
+          io.to(targetId).emit('host:promoted', {});
+        }
+        io.to(roomId).emit('participants:update', _participantList(room));
+      }
+    });
+
+    // ── Chat ─────────────────────────────────────────────────────────────────
     socket.on('chat:message', ({ text }) => {
       const roomId = socket.data.roomId;
       if (!roomId) return;
@@ -145,18 +192,24 @@ app.prepare().then(() => {
       });
     });
 
-    // ── Disconnect ──────────────────────────────────────────────────────────
+    // ── Disconnect ────────────────────────────────────────────────────────────
     socket.on('disconnect', () => {
       const roomId = socket.data.roomId;
       const room = rooms.get(roomId);
       if (!room) return;
 
+      const wasHost = room.hostSocketIds.has(socket.id);
       room.participants.delete(socket.id);
+      if (wasHost) {
+        room.hostSocketIds.delete(socket.id);
+      }
 
-      if (room.hostSocketId === socket.id) {
+      if (room.hostSocketIds.size === 0) {
         const nextHost = room.participants.keys().next().value;
         if (nextHost) {
-          room.hostSocketId = nextHost;
+          room.hostSocketIds.add(nextHost);
+          room.videoSource = null;
+          room.videoUrl = null;
           io.to(nextHost).emit('host:promoted', {});
         } else {
           rooms.delete(roomId);
@@ -179,6 +232,8 @@ function _participantList(room) {
   return Array.from(room.participants.entries()).map(([id, info]) => ({
     id,
     name: info.name,
-    isHost: id === room.hostSocketId,
+    isHost: room.hostSocketIds.has(id),
+    camOn: info.camOn,
+    micOn: info.micOn,
   }));
 }

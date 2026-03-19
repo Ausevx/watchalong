@@ -40,8 +40,9 @@
 /* ── Floating 3D Shapes ── */
 .blob {
   position: absolute;
-  pointer-events: none;
-  z-index: 0;
+  pointer-events: auto;
+  z-index: 50;
+  touch-action: none;
 }
 
 /* Magenta 3D Sphere */
@@ -225,13 +226,18 @@
 }
 
 @media (max-width: 720px) {
-  .nav { padding: 16px 20px; }
-  .hero { padding: 100px 20px 32px; }
-  .entry { padding: 0 20px 48px; }
+  .nav { padding: 12px 16px; }
+  .logo { font-size: 0.75rem; gap: 6px; }
+  .logoDot { width: 22px; height: 22px; }
+  .hero { padding: 80px 16px 32px; }
+  .heroTitle { font-size: clamp(2.5rem, 12vw, 4rem); }
+  .heroSub { font-size: 0.95rem; }
+  .entry { padding: 0 16px 32px; }
   .entryCard { grid-template-columns: 1fr; grid-template-rows: auto 1px auto; }
+  .entryLeft, .entryRight { padding: 24px 20px; }
   .entryDivider { height: 1px; width: 100%; }
   .footer { display: none; }
-  .blob1 { width: 80px; height: 80px; right: 4%; }
+  .blob1 { width: 80px; height: 80px; right: -2%; top: 8%; }
   .blob2 { display: none; }
-  .blob3 { width: 50px; height: 50px; }
+  .blob3 { width: 50px; height: 50px; bottom: 35%; right: 5%; }
 }

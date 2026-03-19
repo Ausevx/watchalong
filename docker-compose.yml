@@ -1,0 +1,30 @@
+
+services:
+  watchalong:
+    build: .
+    container_name: watchalong_app
+    ports:
+      - "3000:3000"
+    volumes:
+      # Persist SQLite DB
+      - watchalong_db:/app/prisma
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    restart: always
+
+  # ── Cloudflare Tunnel ──────────────────────────────────
+  # Exposes the app to the internet without opening router ports.
+  # Set your tunnel token below or pass it via .env file.
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: watchalong_tunnel
+    restart: always
+    command: tunnel run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      - watchalong
+
+volumes:
+  watchalong_db:

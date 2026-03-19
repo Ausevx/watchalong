@@ -40,5 +40,15 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# database
+prisma/*.db
+prisma/*.db-journal
+
+# media
+host-media/
+public/temp/
+PROJECT_RECAP.md
+
 # docs
 hosting_plan.md
+DEPLOY.md

@@ -1,9 +1,9 @@
 .wrapper {
-  position: relative;
+  position: absolute;
+  inset: 0;
   width: 100%;
-  aspect-ratio: 16/9;
+  height: 100%;
   background: #000;
-  border-radius: 12px;
   overflow: hidden;
 }
 
@@ -12,11 +12,35 @@
   height: 100%;
 }
 
-/* Transparent overlay blocks viewer clicks on the player */
+/* Transparent overlay blocks viewer clicks on the YouTube controls */
 .overlay {
   position: absolute;
   inset: 0;
   z-index: 10;
-  cursor: not-allowed;
+  cursor: default;
   background: transparent;
+}
+
+/* Fullscreen button — shown for all users, top-right corner */
+.fullscreenBtn {
+  position: absolute;
+  bottom: 14px;
+  right: 14px;
+  z-index: 20;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  line-height: 1;
+  transition: background 0.15s, opacity 0.15s;
+  opacity: 0;
+}
+.wrapper:hover .fullscreenBtn {
+  opacity: 1;
+}
+.fullscreenBtn:hover {
+  background: rgba(0, 0, 0, 0.85);
 }
