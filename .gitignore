@@ -47,8 +47,16 @@ prisma/*.db-journal
 # media
 host-media/
 public/temp/
-PROJECT_RECAP.md
 
-# docs
+# internal / dev-only docs
+PROJECT_RECAP.md
+HANDOFF.md
 hosting_plan.md
 DEPLOY.md
+
+# generated / build artifacts not needed in source
+package-lock.json
+.dockerignore
+
+# runtime utilities
+server/monitor.js
